@@ -20,7 +20,6 @@ var currentScore = 0;
         move: function(){
           this.x = Math.random()*700;
           this.y = Math.random()*500;
-          currentScore+=5;
         }
       }
       arr.push(obj);
@@ -28,31 +27,30 @@ var currentScore = 0;
 
 var updateCurrentScore = function(){
   d3.select(".current")
-  .text("Current Score: " + currentScore);
+  .text("Timer: " + currentScore);
 }
 
 var updateHighScore = function(){
   if(currentScore > highScore){
     highScore = currentScore;
     d3.select(".highscore")
-    .text("High Score: "+ highScore)
+    .text("Fastest Time: "+ highScore)
   }
-  collisions++;
 
   d3.select(".collisions")
-  .text("Collisions: " + collisions);
+  .text("Fishies Eaten: " + collisions);
 }
 
 // var playerArr = [];
 // playerArr[0] = {id: "player", x: 350, y: 250};
 
 //Setting up Player
-var player = canvas.append("circle")
+var player = canvas.append("image")
     .attr('class','player')
-    .attr('fill', 'beige')
-    .attr("cx",  350)
-    .attr("cy", 250)
-    .attr("r",10)
+    // .attr('fill', 'beige')
+    .attr("height",  75)
+    .attr("width", 75)
+    .attr("xlink:href","shark.gif")
 
 // var followMouse = function(){
 //   canvas.selectAll('circle.player')
@@ -86,60 +84,88 @@ var drag = d3.behavior.drag()
     } else{
       var y = d3.event.y;
     }
-    d3.select(this).attr('cx', x);
-    d3.select(this).attr('cy', y);
+    d3.select(this).attr('x', x-37.5);
+    d3.select(this).attr('y', y-37.5);
   })
 
-canvas.select("circle.player").call(drag);
+canvas.select("image.player").call(drag);
+
+// canvas.append("defs")
+//   .append("pattern")
+//   .attr("id", "fish")
+//   .attr("width", 30)
+//   .attr("height", 30)
+//   .append("image")
+//   .attr("xlink:href", "./asteroid.png")
+//   .attr("width", 30)
+//   .attr("height", 30)
+
 
 //followMouse();
 
 // Setting up Enemies
-    var enemy = canvas.selectAll("circle")
+    var enemy = canvas.selectAll("image")
     .data(arr)
     .enter()
-    .append("circle")
+    .append("image")
     .attr('class','enemy')
-    .attr("fill", "teal")
-    .attr("cx", function(d){
+    // .attr("fill", "url(#fish)")
+    .attr("x", function(d){
       return d.x;
     })
-    .attr("cy", function(d){
+    .attr("y", function(d){
       return d.y;
     })
-    .attr("r", 10)
+    // .attr("r", 50)
+    // .append("svg:image")
+    // .append("g")
+    // .append("image")
+    .attr("xlink:href","fish.png")
+    .attr("width", 20)
+    .attr("height", 20);
+
     
     console.log(enemy);
 
     var detectCollision = function(){
-      enemy.each(function(){
-        var particularEnemy = d3.select(this);
-        playerX = canvas.select("circle.player").attr("cx")
-        enemyX = particularEnemy.attr("cx")
-        playerY = canvas.select("circle.player").attr("cy")
-        enemyY = particularEnemy.attr("cy")
-        if(Math.abs(playerX-enemyX) < 7 && Math.abs(playerY-enemyY) < 7){ 
-          updateHighScore();
-          currentScore = 0;
-          
-        }
-      })
-      updateCurrentScore();
+      if(collisions < 30){
+        enemy.each(function(){
+                var particularEnemy = d3.select(this);
+                playerX = canvas.select("image.player").attr("x")-37.5
+                enemyX = particularEnemy.attr("x")-25
+                playerY = canvas.select("image.player").attr("y")-37.5
+                enemyY = particularEnemy.attr("y")-25
+                if(Math.abs(playerX-enemyX) < 37.5 && Math.abs(playerY-enemyY) < 37.5){ 
+                  console.log("hit")
+                  particularEnemy
+                    .remove()
+                    collisions = 30 - d3.selectAll('.enemy')[0].length;
+                  updateHighScore();
+                  
+                }
+              })
+              updateCurrentScore();
+      }
+      else {
+
+      }
     }
 
     var enemies = function(){
       setInterval(function(){
-        canvas.selectAll("circle.enemy")
+        canvas.selectAll("image.enemy")
         .transition()
         .duration(1500)
-        .attr("cx", function(d){
+        .attr("x", function(d){
           d.move();
           return d.x;
         })
-        .attr("cy", function(d){
+        .attr("y", function(d){
           return d.y;
         })
-      },1600)      
+        currentScore+=1
+
+      },1000)      
     }
 
 enemies();
